@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+# Author: diperblue
+# Date: 29/10/2023
+# Description: A shell script program that can be used as a library for       \
+# installing shell software.
+# 
+# To install:
+# 	To use it normally you will have to use "--install" or "-i", so the code  \
+# will run normally installing the libraries right after the software. 
+#
+# Error case: The "/lib" folder that is used to store libraries may not exist
+# 	Honestly, I don't know under what circumstances this would happen... But  \
+# if it happens (or you simply don't want to install in "/lib") you can use   \
+# the "-lb" or "--libFolder" option to edit the folder in which it will inst_ \ 
+# all the libraries.
+
+
+#------------Variables-------------
+libFolder="/lib"
+helpM="""
+This program is a standard shell script installation program that was invented by d1perblue (hacker, ctf player and software engineer)
+
+There are some specifics to using the program.
+To use the program:
+			-i or --install
+						Using this you will proceed with the normal installation.
+			-lf or --libFolder
+						Using this, you enter in the next parameter the directory of the folder where you want to install the primary shell software libraries.
+"""
+software="studyman"
+#----------------------------------
+
+#------------Parameters------------
+case $1 in
+	-i|--install)
+	;;
+	-lf|--libFolder)
+		libFolder="$2"
+		echo "Placing libraries folder to $2"
+	;;
+	-h|--help)
+		echo "$helpM"
+		exit 1
+	;;
+	*)
+		echo "To understand how the program works use: -h or --help."
+		exit 1
+	;;
+esac
+#----------------------------------
+
+#-------------Analysis-------------
+[[ ! -d "$libFolder" ]] && { echo \
+"""
+The default libraries folder does not exist.
+To carry out the installation you will have to modify the libraries installation folder with the "-lf" or "--libFolder" option, you will then insert the folder in which you will want to insert the $software software libraries
+"""; \
+exit 1; }
+#----------------------------------
+
+#-----------Installing...----------
+echo "Installing libraries..."
+#----------------------------------
