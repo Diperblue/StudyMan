@@ -41,13 +41,29 @@ function installLibs() {
 
 	return 0
 }
+function removePackages() {
+	read -p """First of all, to collect logs, you have to have a little more knowledge
+The command that will be executed is: rm -rf $src
+Can it be executed?[N/y]: """ _temp
+	if [[ "$_temp" = "Y" ]];then
+		echo "Removing packages."
+		rm -rf $src
+	fi
+}
 #----------------------------------
 
 #------------Parameters------------
 case $1 in
 	-i|--install)
 		src="$2"
-		[[ "$2" != "-sil" ]] || [[ "$2" != "--skipInstallLibs" ]] && { installLibs; }
+		[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
+		if [[ "$2" != "-sil" ]] || [[ "$2" != "--skipInstallLibs" ]];then
+			installLibs
+		else
+			echo "Skipping library installation."
+			src="$3"
+			[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
+		fi
 	;;
 	-lf|--libFolder)
 		libFolder="$2"
@@ -76,4 +92,14 @@ exit 1; }
 #----------------------------------
 
 #-----------Installing...----------
+##----------Compilling...----------
+echo "Compiling."
+[[ -e "$src/studyman" ]] && { echo "The $src file does not exist!"; exit 1; }
+shc -f $src/studyman -o studyman
+
+##----------Installing...----------
+echo "Installing to \"/usr/bin\"."
+cp studyman /usr/bin/
+echo "\e[1;32;40mInstallation completed successfully!\e[0m"
+removePackages
 #----------------------------------
