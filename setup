@@ -35,8 +35,8 @@ software="studyman"
 #------------Functions-------------
 function installLibs() {
 	echo "Installing libraries..."
-	mkdir -p $libFolder/studyman/modules
-	cp ${src}/modules/* $libFolder/studyman/modules
+	mkdir -p ${libFolder}/studyman/modules
+	cp ${src}/modules/* ${libFolder}/studyman/modules
 	echo "Installed modules."
 
 	return 0
@@ -52,9 +52,23 @@ Can it be executed?[N/y]: """ _temp
 }
 #----------------------------------
 
+#-------------Analysis-------------
+[[ "$UID" -ne "0" ]] && { echo "You need root."; exit 1; }
+[[ ! -d "$libFolder" ]] && { echo \
+"""
+The default libraries folder does not exist.
+To carry out the installation you will have to modify the libraries installation folder with the "-lf" or "--libFolder" option, you will then insert the folder in which you will want to insert the $software software libraries
+"""; \
+exit 1; }
+if [[ -d "$libFolder/studyman/modules" ]] && ([[ "$1" = "-sil" ]] || [[ "$1" = "--skipInstallLibs" ]]);then
+	echo "You already have the modules folder, run the software again with the \"-sil\" or \"--skipInstallLibs\" option to skip installing libraries."
+	exit 1
+fi
+#----------------------------------
+
 #------------Parameters------------
 case $1 in
-	-i|--install)
+	-i|--install|-sil|--skipInstallLibs)
 		src="$2"
 		[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
 		if [[ "$2" != "-sil" ]] || [[ "$2" != "--skipInstallLibs" ]];then
@@ -64,10 +78,6 @@ case $1 in
 			src="$3"
 			[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
 		fi
-	;;
-	-lf|--libFolder)
-		libFolder="$2"
-		echo "Placing libraries folder to $2"
 	;;
 	-h|--help)
 		echo -e "$helpM"
@@ -80,26 +90,15 @@ case $1 in
 esac
 #----------------------------------
 
-#-------------Analysis-------------
-[[ ! -d "$libFolder" ]] && { echo \
-"""
-The default libraries folder does not exist.
-To carry out the installation you will have to modify the libraries installation folder with the "-lf" or "--libFolder" option, you will then insert the folder in which you will want to insert the $software software libraries
-"""; \
-exit 1; }
-[[ "$UID" -ne "0" ]] && { echo "You need root."; exit 1; }
-[[ -d "$libFolder/studyman/modules" ]] && { echo "You already have the modules folder, run the software again with the \"-sil\" or \"--skipInstallLibs\" option to skip installing libraries."; exit 1; }
-#----------------------------------
-
 #-----------Installing...----------
 ##----------Compilling...----------
 echo "Compiling."
-[[ -e "$src/studyman" ]] && { echo "The $src file does not exist!"; exit 1; }
+[[ ! -e "$src/studyman" ]] && { echo "The $src file does not exist!"; exit 1; }
 shc -f $src/studyman -o studyman
 
 ##----------Installing...----------
 echo "Installing to \"/usr/bin\"."
 cp studyman /usr/bin/
-echo "\e[1;32;40mInstallation completed successfully!\e[0m"
+echo -e "\e[1;32;40mInstallation completed successfully!\e[0m"
 removePackages
 #----------------------------------
