@@ -1,0 +1,104 @@
+#!/usr/bin/env bash
+
+# Author: diperblue
+# Date: 29/10/2023
+# Description: A shell script program that can be used as a library for       \
+# installing shell software.
+# 
+# To install:
+# 	To use it normally you will have to use "--install" or "-i", so the code  \
+# will run normally installing the libraries right after the software.        \
+# After that you will inform the directory of the \"src\" page (From the 			\
+# program files).
+#
+# Error case: The "/lib" folder that is used to store libraries may not exist
+# 	Honestly, I don't know under what circumstances this would happen... But  \
+# if it happens (or you simply don't want to install in "/lib") you can use   \
+# the "-lb" or "--libFolder" option to edit the folder in which it will inst_ \ 
+# all the libraries.
+
+
+#------------Variables-------------
+libFolder="/lib"
+helpM="""This program is a standard shell script installation program.
+
+There are some specifics to using the program.
+To use the program:
+	-i or --install
+		Using this you will proceed with the normal installation.
+	-lf or --libFolder
+		Using this, you enter in the next parameter the directory of the \nfolder where you want to install the primary shell software libraries.
+"""
+software="studyman"
+#----------------------------------
+
+#------------Functions-------------
+function installLibs() {
+	echo "Installing libraries..."
+	mkdir -p ${libFolder}/studyman/modules
+	cp ${src}/modules/* ${libFolder}/studyman/modules
+	echo "Installed modules."
+
+	return 0
+}
+function removePackages() {
+	read -p """First of all, to collect logs, you have to have a little more knowledge
+The command that will be executed is: rm -rf $src
+Can it be executed?[N/y]: """ _temp
+	if [[ "$_temp" = "Y" ]];then
+		echo "Removing packages."
+		rm -rf $src
+	fi
+}
+#----------------------------------
+
+#-------------Analysis-------------
+[[ "$UID" -ne "0" ]] && { echo "You need root."; exit 1; }
+[[ ! -d "$libFolder" ]] && { echo \
+"""
+The default libraries folder does not exist.
+To carry out the installation you will have to modify the libraries installation folder with the "-lf" or "--libFolder" option, you will then insert the folder in which you will want to insert the $software software libraries
+"""; \
+exit 1; }
+if [[ -d "${libFolder}/studyman/modules" ]] && ([[ "$1" = "-sil" ]] || [[ "$1" = "--skipInstallLibs" ]]);then
+	echo "You already have the modules folder, run the software again with the \"-sil\" or \"--skipInstallLibs\" option to skip installing libraries."
+	exit 1
+fi
+#----------------------------------
+
+#------------Parameters------------
+case $1 in
+	-i|--install|-sil|--skipInstallLibs)
+		src="$2"
+		[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
+		if [[ "$2" != "-sil" ]] || [[ "$2" != "--skipInstallLibs" ]];then
+			installLibs
+		else
+			echo "Skipping library installation."
+			src="$3"
+			[[ -z "$src" ]] && { echo "You did not include the \"/src\" directory of the original repository downloaded with \"git clone\""; exit 1; }
+		fi
+	;;
+	-h|--help)
+		echo -e "$helpM"
+		exit 0
+	;;
+	*)
+		echo "To understand how the program works use: -h or --help."
+		exit 1
+	;;
+esac
+#----------------------------------
+
+#-----------Installing...----------
+##----------Compilling...----------
+echo "Compiling."
+[[ ! -e "$src/studyman" ]] && { echo "The $src file does not exist!"; exit 1; }
+shc -f $src/studyman -o studyman
+
+##----------Installing...----------
+echo "Installing to \"/usr/bin\"."
+cp studyman /usr/bin/
+echo -e "\e[1;32;40mInstallation completed successfully!\e[0m"
+removePackages
+#----------------------------------
